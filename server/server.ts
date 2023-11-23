@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { resetDB } from './config/db';
 
 import tierlistRoute from './routes/tierlistRoute';
+import tierlistsRoute from './routes/tierlistsRoute';
+
 
 resetDB()
 dotenv.config();
@@ -20,6 +22,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/tierlist', tierlistRoute);
+app.use('/api/tierlists', tierlistsRoute);
 
 
 
