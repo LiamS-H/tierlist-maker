@@ -22,9 +22,10 @@ CREATE TABLE user_tierlist_sharing (
 CREATE TABLE item_tierlist_model (
   tierlist_id integer,
   item_id integer,
-  rating integer,
+  tier_id integer,
   FOREIGN KEY(tierlist_id) REFERENCES tierlist(tierlist_id) ON DELETE CASCADE,
-  FOREIGN KEY(item_id) REFERENCES item(item_id) ON DELETE CASCADE
+  FOREIGN KEY(item_id) REFERENCES item(item_id) ON DELETE CASCADE,
+  FOREIGN KEY(tier_id) REFERENCES tierlist_tiers(tier_id) ON DELETE CASCADE
 );
 
 CREATE TABLE item (
@@ -35,7 +36,7 @@ CREATE TABLE item (
 
 CREATE TABLE tierlist_tiers (
   tierlist_id integer,
-  tier_value integer,
+  tier_id integer,
   tier_row_name string,
   FOREIGN KEY(tierlist_id) REFERENCES tierlist(tierlist_id) ON DELETE CASCADE
 );

@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react'
 import AXIOS from 'axios'
-import dotenv from 'dotenv';
-import { Tierlist } from '../models/tierlist';
-dotenv.config();
+import { ITierlist, Access } from '../models/tierlist';
 
-export function usePublicTierlists() {
-    const [data, setData] = useState<Tierlist[]>([]);
-  
+function useTierlist(_id:string | undefined) {
+    const [tierlist, setTierlist] = useState<ITierlist | undefined>(undefined);
+    const [access, setAccess] = useState<Access>("DENIED");
+
     useEffect(() => {
-        AXIOS.get(`${process.env.PORT}/api/tierlists`)
-        .then((response) => JSON.parse(response.data))
-        .then((json) => setData(json));
-    }, []);
-  
-    return data;
+        if (_id == undefined) { return }
+        AXIOS.get(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`)
+        .then((response) => {
+            setTierlist(response.data.tierlist)
+            setAccess(response.data.access)
+        })
+    }, [_id]);
+
+    return { tierlist, setTierlist, access };
 }
+
+export { useTierlist }

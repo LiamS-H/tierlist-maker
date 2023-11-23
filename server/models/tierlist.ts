@@ -1,14 +1,25 @@
 import { openDB } from "../config/db"
 
+type Access = "OWNER" | "DENIED" | "EDIT" | "VIEW"
+
 interface Item {
     _id: number,
     item_name: string,
     item_img: string,
-    rating: number
+}
+
+interface Items {
+    [key:number] : Item
+}
+
+interface Tier {
+    _id: number,
+    name: string,
+    items: number[]
 }
 
 interface Tiers {
-    [key:number] : string
+    [key:number] : Tier
 }
 
 interface Tierlist {
@@ -16,9 +27,9 @@ interface Tierlist {
     name: string,
     owner: string,
     created_at: string,
-    items?: Item[],
+    items: Items,
     visibility: string
-    tiers?: Tiers
+    tiers: Tiers,
 }
 
 async function searchPublicTierlists(query: string, offset = 0): Promise<Tierlist[]> {
@@ -73,7 +84,7 @@ async function deleteTierlist(tierlist_id: string) {
     `, [tierlist_id])
 }
 
-async function checkAccess(tierlist_id: string, user_id: string): Promise<"OWNER" | "DENIED" | "EDIT" | "VIEW"> {
+async function checkAccess(tierlist_id: string, user_id: string | undefined): Promise<Access> {
     const db = await openDB()
     let row;
     row = await db.get<{visibility: string, owner:string}>(`
@@ -85,6 +96,8 @@ async function checkAccess(tierlist_id: string, user_id: string): Promise<"OWNER
     `, [tierlist_id])
     if (row == undefined) {await db.close(); return "DENIED"}
     const { visibility, owner } = row
+    if (user_id == undefined && visibility == "Public") return "VIEW"
+    if (user_id == undefined && visibility == "Private") return "DENIED"
     
     row = await db.get<{can_edit: string}>(`
         SELECT can_edit FROM user_tierlist_sharing
@@ -119,14 +132,14 @@ async function updateTierlist(tierlist: Tierlist) {
         WHERE tierlist_id = ( ? )
         `, [tierlist._id])
         const rows: (string | number)[] = []
-        for (let tier_value in tierlist.tiers) {
+        for (let tier_id in tierlist.tiers) {
             rows.push(tierlist._id)
-            rows.push(tier_value)
-            rows.push(tierlist.tiers[tier_value])
+            rows.push(tier_id)
+            rows.push(tierlist.tiers[tier_id].name)
         }
 
         await db.run(`
-        INSERT INTO tierlist_tiers ( tierlist_id, tier_value, tier_row_name )
+        INSERT INTO tierlist_tiers ( tierlist_id, tier_id, tier_row_name )
         VALUES ${Array(Object.keys(tierlist.tiers).length).fill('( ?, ?, ? )').join(',')}
         `, rows)
     }
@@ -135,15 +148,17 @@ async function updateTierlist(tierlist: Tierlist) {
         DELETE FROM item_tierlist_model
         WHERE tierlist_id = ( ? )
         `, [tierlist._id])
-        const rows: number[] = []
-        tierlist.items.forEach((item)=>{
-            rows.push(tierlist._id)
-            rows.push(item._id)
-            rows.push(item.rating)
-        })
+        const rows: (string | number)[] = []
+        for (let tier_id in tierlist.tiers){
+            for (let item_id of tierlist.tiers[tier_id].items) {
+                rows.push(tierlist._id)
+                rows.push(item_id)
+                rows.push(tier_id)
+            }
+        }
         await db.run(`
-        INSERT INTO item_tierlist_model ( tierlist_id, item_id, rating )
-        VALUES ${Array(tierlist.items.length).fill('( ?, ?, ? )').join(',')}
+        INSERT INTO item_tierlist_model ( tierlist_id, item_id, tier_id )
+        VALUES ${Array(rows.length/3).fill('( ?, ?, ? )').join(',')}
         `, rows)
     }
     
@@ -165,27 +180,29 @@ async function createTierlist(tierlist: Tierlist, user_id: string) : Promise<num
     
     if (tierlist.tiers) {
         const rows: (string | number)[] = []
-        for (let tier_value in tierlist.tiers) {
-            rows.push(id)
-            rows.push(tier_value)
-            rows.push(tierlist.tiers[tier_value])
+        for (let tier_id in tierlist.tiers) {
+            rows.push(tierlist._id)
+            rows.push(tier_id)
+            rows.push(tierlist.tiers[tier_id].name)
         }
 
         await db.run(`
-        INSERT INTO tierlist_tiers ( tierlist_id, tier_value, tier_row_name )
+        INSERT INTO tierlist_tiers ( tierlist_id, tier_id, tier_row_name )
         VALUES ${Array(Object.keys(tierlist.tiers).length).fill('( ?, ?, ? )').join(',')}
         `, rows)
     }
     if (tierlist.items) {
-        const rows: number[] = []
-        tierlist.items.forEach((item)=>{
-            rows.push(id)
-            rows.push(item._id)
-            rows.push(item.rating)
-        })
+        const rows: (string | number)[] = []
+        for (let tier_id in tierlist.tiers){
+            for (let item_id of tierlist.tiers[tier_id].items) {
+                rows.push(tierlist._id)
+                rows.push(item_id)
+                rows.push(tier_id)
+            }
+        }
         await db.run(`
-        INSERT INTO item_tierlist_model ( tierlist_id, item_id, rating )
-        VALUES ${Array(tierlist.items.length).fill('( ?, ?, ? )').join(',')}
+        INSERT INTO item_tierlist_model ( tierlist_id, item_id, tier_id )
+        VALUES ${Array(rows.length/3).fill('( ?, ?, ? )').join(',')}
         `, rows)
     }
     return id
@@ -205,31 +222,36 @@ async function getTierlistByID(tierlist_id: string): Promise<Tierlist> {
         INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
     WHERE _id = ( ? )
     `, [tierlist_id])
+    tierlist.items = {}
+    tierlist.tiers = {}
+
+    const tier_rows = await db.all<{_id: number, name:string}>(`
+    SELECT tier_id as _id, tier_row_name as name
+    FROM tierlist
+        INNER JOIN tierlist_tiers on tierlist.tierlist_id = tierlist_tiers.tierlist_id
+    WHERE tierlist.tierlist_id = (?)
+    `, tierlist_id)
+    tier_rows.forEach((row) => {
+        tierlist.tiers[row._id] = {_id:row._id, name:row.name, items:[]}
+    });
     
-    const items: Item[] = await db.all<Item>(`
-    SELECT item.item_id as _id, item_name, item_img, item_tierlist_model.rating
+    const item_rows = await db.all<{_id: number, item_name:string, item_img:string, tier_id:number}>(`
+    SELECT item.item_id as _id, item_name, item_img, item_tierlist_model.tier_id as tier_id
     FROM tierlist
         INNER JOIN item_tierlist_model on tierlist.tierlist_id = item_tierlist_model.tierlist_id
         INNER JOIN item on item.item_id = item_tierlist_model.item_id
     WHERE tierlist.tierlist_id = (?)
     `, tierlist_id)
+    item_rows.forEach((row)=>{
+        tierlist.items[row._id] = {_id:row._id, item_name:row.item_name, item_img:row.item_img}
+        tierlist.tiers[row.tier_id].items.push(row._id)
+    })
 
-    const tiers: Tiers = {};
-    const rows = await db.all<{number: number, name:string}>(`
-    SELECT tier_value as number, tier_row_name as name
-    FROM tierlist
-        INNER JOIN tierlist_tiers on tierlist.tierlist_id = tierlist_tiers.tierlist_id
-    WHERE tierlist.tierlist_id = (?)
-    `, tierlist_id)
-    rows.forEach(row => {tiers[row.number] = row.name});
-
-    tierlist.items = items
-    tierlist.tiers = tiers
     return tierlist
 }
 
 export {
-    Tierlist,Item, Tiers,
+    Tierlist, Item, Tier, Access,
     exists, checkAccess,
     getPublicTierlists, searchPublicTierlists, getTierlistByID, 
     updateTierlist, deleteTierlist, createTierlist }

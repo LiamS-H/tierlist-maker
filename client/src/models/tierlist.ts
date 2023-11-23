@@ -1,4 +1,9 @@
-import {Tierlist, Item, Tiers} from '../../../server/models/tierlist'
+import {Tierlist, Item, Tier, Access} from '../../../server/models/tierlist'
 
-export type {Tierlist, Item, Tiers}
+type ITierlist = Tierlist
+type IItem = Item
+type ITier = Tier
+
+
+export type {ITierlist, IItem, ITier, Access}
 export  {}
