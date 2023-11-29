@@ -181,7 +181,7 @@ async function createTierlist(tierlist: Tierlist, user_id: string) : Promise<num
     if (tierlist.tiers) {
         const rows: (string | number)[] = []
         for (let tier_id in tierlist.tiers) {
-            rows.push(tierlist._id)
+            rows.push(id)
             rows.push(tier_id)
             rows.push(tierlist.tiers[tier_id].name)
         }
@@ -195,7 +195,7 @@ async function createTierlist(tierlist: Tierlist, user_id: string) : Promise<num
         const rows: (string | number)[] = []
         for (let tier_id in tierlist.tiers){
             for (let item_id of tierlist.tiers[tier_id].items) {
-                rows.push(tierlist._id)
+                rows.push(id)
                 rows.push(item_id)
                 rows.push(tier_id)
             }
