@@ -13,6 +13,7 @@ const reset = `
     DROP TABLE IF EXISTS collections;
     DROP TABLE IF EXISTS tierlist_settings;
     DROP TABLE IF EXISTS visibilities;
+    DROP TABLE IF EXISTS tierlistFTS;
 `
 
 const schema = fs.readFileSync('./queries/schema.sql').toString()
