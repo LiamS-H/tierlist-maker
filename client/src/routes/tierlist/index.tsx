@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { Navigate, useParams } from "react-router"
 import { useTierlist } from "../../hooks/tierlist"
 import LoadingTierlist from "./loading"
-import { Button } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Typography } from '@mui/material';
 
+import DeleteButton from './DeleteButton';
+import ShareForm from './ShareForm';
 
 import { DragDropContext, DropResult } from "@hello-pangea/dnd"
 
 import Tier from "./tier"
 import { ITierlist } from "../../models/tierlist"
+
 
 export default function Tierlist() {
     const { id } = useParams()
@@ -95,6 +97,7 @@ export default function Tierlist() {
 
     
     return (<>
+        <Typography>{tierlist.name}</Typography>
         <DragDropContext
             onDragEnd={onDragEnd}
             onDragStart={onDragStart}
@@ -106,14 +109,16 @@ export default function Tierlist() {
                 return <Tier key={tier._id} tier={tier} items={items} isDragDisabled={access=="VIEW"||dragging}/>
             })}
         </DragDropContext>
+
+        {access == "OWNER" ?
+        <>
+            <Typography>Owner Settings</Typography>
+            <ShareForm shareTierlist={shareTierlist} />
+            <DeleteButton deleteTierlist={deleteTierlist} />
+        </>
+        :<></>
+        }
         
-        <Button
-            variant="contained"
-            color="error" // You can use 'secondary' for red in MUI v5
-            startIcon={<DeleteIcon />}
-            onClick={deleteTierlist}
-        >
-            Delete
-        </Button>
+
     </>)
 }
