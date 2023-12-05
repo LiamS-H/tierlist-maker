@@ -41,7 +41,7 @@ async function searchPublicTierlists(query: string, offset = 0): Promise<Tierlis
         tierlist.created_at as created_at,
         visibilities.name as visibility
     FROM tierlist
-        INNER JOIN users on users.user_uuid = tierlist.owner
+        INNER JOIN users on users.user_uuid = tierlist.user_uuid
         INNER JOIN tierlist_settings on tierlist.tierlist_id = tierlist_settings.tierlist_id
         INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
     WHERE visibilities.visibility = 0
@@ -60,7 +60,7 @@ async function getPublicTierlists(offset = 0): Promise<Tierlist[]> {
             tierlist.created_at as created_at,
             visibilities.name as visibility
         FROM tierlist
-            INNER JOIN users on users.user_uuid = tierlist.owner
+            INNER JOIN users on users.user_uuid = tierlist.user_uuid
             INNER JOIN tierlist_settings on tierlist.tierlist_id = tierlist_settings.tierlist_id
             INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
         WHERE visibilities.visibility = 0
@@ -88,7 +88,7 @@ async function checkAccess(tierlist_id: string, user_id: string | undefined): Pr
     const db = await openDB()
     let row;
     row = await db.get<{visibility: string, owner:string}>(`
-        SELECT visibilities.name as visibility, tierlist.owner as owner
+        SELECT visibilities.name as visibility, tierlist.user_uuid as owner
         FROM tierlist
         INNER JOIN tierlist_settings on tierlist_settings.tierlist_id = tierlist.tierlist_id
         INNER JOIN visibilities on visibilities.visibility = tierlist_settings.visibility
@@ -217,7 +217,7 @@ async function getTierlistByID(tierlist_id: string): Promise<Tierlist> {
         tierlist.created_at as created_at,
         visibilities.name as visibility
     FROM tierlist
-        INNER JOIN users on users.user_uuid = tierlist.owner
+        INNER JOIN users on users.user_uuid = tierlist.user_uuid
         INNER JOIN tierlist_settings on tierlist.tierlist_id = tierlist_settings.tierlist_id
         INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
     WHERE _id = ( ? )
@@ -250,8 +250,18 @@ async function getTierlistByID(tierlist_id: string): Promise<Tierlist> {
     return tierlist
 }
 
+
+async function shareTierlist(tierlist_id: string, user_id: string, can_edit: boolean): Promise<void> {
+    const db = await openDB()
+
+    await db.run(`INSERT INTO user_tierlist_sharing (tierlist_id, user_uuid, can_edit)
+    VALUES (?, ?, ?)
+    ON CONFLICT (tierlist_id, user_uuid)
+    DO UPDATE SET can_edit = excluded.can_edit;`, [tierlist_id, user_id, can_edit])
+    }
+
 export {
     Tierlist, Item, Tier, Access,
     exists, checkAccess,
     getPublicTierlists, searchPublicTierlists, getTierlistByID, 
-    updateTierlist, deleteTierlist, createTierlist }
+    updateTierlist, deleteTierlist, createTierlist, shareTierlist }

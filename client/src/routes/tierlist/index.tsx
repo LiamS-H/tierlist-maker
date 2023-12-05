@@ -10,7 +10,7 @@ import { ITierlist } from "../../models/tierlist"
 
 export default function Tierlist() {
     const { id } = useParams()
-    const { tierlist, access, setTierlist } = useTierlist(id)
+    const { tierlist, access, updateTierlist } = useTierlist(id)
     const [ dragging, setDragging ] = useState<boolean>(false)
 
     if (tierlist == undefined) {
@@ -55,7 +55,7 @@ export default function Tierlist() {
                 }
             }
 
-            setTierlist(new_tierlist)
+            updateTierlist(new_tierlist)
         }
         if (start_tier != end_tier) {
             const new_start_items = [...start_tier.items]
@@ -82,7 +82,7 @@ export default function Tierlist() {
                 }
             }
 
-            setTierlist(new_tierlist)
+            updateTierlist(new_tierlist)
         }
 
         
@@ -98,7 +98,7 @@ export default function Tierlist() {
                 const tier = tierlist.tiers[Number(tier_id)]
                 const items = tier.items.map((item_id) => tierlist.items[item_id])
 
-                return <Tier key={tier._id} tier={tier} items={items} />
+                return <Tier key={tier._id} tier={tier} items={items} isDragDisabled={access=="VIEW"}/>
             })}
         </DragDropContext>
     </>)

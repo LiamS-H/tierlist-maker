@@ -50,7 +50,7 @@ router.put('/:uid', async (req, res) => {
         return res.status(400).json({ message: 'CANNOT EDIT Access Denied' })
     }
     await updateTierlist(tierlist)
-    res.status(202).json(tierlist)
+    res.status(201).json(tierlist)
 })
 
 router.delete('/:uid', async (req, res) => {
