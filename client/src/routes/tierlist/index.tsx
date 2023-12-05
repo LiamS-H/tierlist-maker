@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { useParams } from "react-router"
+import { Navigate, useParams } from "react-router"
 import { useTierlist } from "../../hooks/tierlist"
 import LoadingTierlist from "./loading"
+import { Button, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 
 import { DragDropContext, DropResult } from "@hello-pangea/dnd"
 
@@ -10,13 +13,15 @@ import { ITierlist } from "../../models/tierlist"
 
 export default function Tierlist() {
     const { id } = useParams()
-    const { tierlist, access, updateTierlist } = useTierlist(id)
+    const { tierlist, access, updateTierlist, deleteTierlist, shareTierlist } = useTierlist(id)
     const [ dragging, setDragging ] = useState<boolean>(false)
 
+    if (tierlist == undefined && access == "DENIED") {
+        return (<Navigate to={"/"}/>)
+    }
+
     if (tierlist == undefined) {
-        return (<>
-            <LoadingTierlist />
-        </>)
+        return (<LoadingTierlist />)
     }
 
     function onDragStart() {
@@ -98,8 +103,18 @@ export default function Tierlist() {
                 const tier = tierlist.tiers[Number(tier_id)]
                 const items = tier.items.map((item_id) => tierlist.items[item_id])
 
-                return <Tier key={tier._id} tier={tier} items={items} isDragDisabled={access=="VIEW"}/>
+                return <Tier key={tier._id} tier={tier} items={items} isDragDisabled={access=="VIEW"||dragging}/>
             })}
         </DragDropContext>
+        
+        <Button
+            variant="contained"
+            color="error" // You can use 'secondary' for red in MUI v5
+            startIcon={<DeleteIcon />}
+            onClick={deleteTierlist}
+        >
+            Delete
+        </Button>
+        <Typography>{dragging?"dragging":"notdragging"}</Typography>
     </>)
 }
