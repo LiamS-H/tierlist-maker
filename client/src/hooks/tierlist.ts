@@ -10,7 +10,6 @@ function useTierlist(_id:string | undefined) {
     const [access, setAccess] = useState<IAccess>("LOADING");
     const {raiseError, raiseSuccess} = useSnackbar()
 
-
     useEffect(() => {
         if (_id == undefined) { return }
         AXIOS.get(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`,{
@@ -30,26 +29,26 @@ function useTierlist(_id:string | undefined) {
             setAccess("DENIED")
             console.error(error)
         })
-    }, [_id, user?.user_uuid]);
+    }, [_id, user]);
 
-    async function updateTierlist(tierlist:ITierlist) {
+    async function updateTierlist(tierlist:ITierlist): Promise<"SUCCESS" | "ERROR" | undefined> {
         if (user == null ) {
             raiseError("please sign in to continue")
             console.error("please sign in to continue")
-            return;
+            return "ERROR";
         }
 
         if (access == "DENIED") {
             
             console.error("You should not have access to this tierlist")
-            return;
+            return "ERROR";
         }
         if (access == "VIEW") {
             console.error("Error Tierlist is View Only")
-            return;
+            return "ERROR";
         }
         setTierlist(tierlist)
-        AXIOS.put(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`,{
+        await AXIOS.put(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`,{
             tierlist: tierlist,
         }, {
             params: {
@@ -70,7 +69,7 @@ function useTierlist(_id:string | undefined) {
             return "ERROR"
         })
     }
-    async function shareTierlist(username:string, can_edit:boolean) {
+    async function shareTierlist(username:string, can_edit:boolean): Promise<"SUCCESS" | "ERROR" | undefined>  {
         if (user == null ) {
             console.error("Must be signed in to delete tierlist")
             return "ERROR";
@@ -83,16 +82,16 @@ function useTierlist(_id:string | undefined) {
             console.error("You do not have permission to share this tierlist")
             return "ERROR";
         }
-        AXIOS.put(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/sharing/${_id}`,{
+        await AXIOS.put(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/share/${_id}`,{
             username:username,
-            can_edit:can_edit
+            can_edit:can_edit?1:0
         }, {
             params: {
                 token: user.user_uuid,
             },
         })
         .then(() => {
-            raiseSuccess("tierlist shared deleted.")
+            raiseSuccess("tierlist shared successfuly.")
             return "SUCCESS"
         })
         .catch((e: Error)=>{
@@ -102,8 +101,7 @@ function useTierlist(_id:string | undefined) {
         })
     }
 
-    async function deleteTierlist() {
-        console.log(access)
+    async function deleteTierlist(): Promise<"SUCCESS" | "ERROR" | undefined> {
         if (user == null ) {
             console.error("Must be signed in to delete tierlist")
             return"ERROR";
@@ -116,7 +114,7 @@ function useTierlist(_id:string | undefined) {
             console.error("You do not have permission to delete this tierlist")
             return "ERROR";
         }
-        AXIOS.delete(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`,{
+        await AXIOS.delete(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist/${_id}`,{
             params: {
                 token: user.user_uuid,
             },
@@ -135,6 +133,7 @@ function useTierlist(_id:string | undefined) {
             console.error(e)
             return "ERROR"
         })
+        return "ERROR"
     }
 
     return { tierlist, updateTierlist, shareTierlist, deleteTierlist, access };

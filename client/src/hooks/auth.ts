@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { IAuthUser } from "../models/auth";
 import AXIOS from 'axios'
 
@@ -21,7 +21,9 @@ function useLogin() {
 }
 
 function useAuth(): IAuthContext {
-    const [user, setUser] = useState<IAuthUser | null>(null);
+    const storedUserString = localStorage.getItem('user');
+    const storedUser: IAuthUser | null = storedUserString ? JSON.parse(storedUserString) : null;  
+    const [user, setUser] = useState<IAuthUser | null>(storedUser);
 
     async function login(email: string, password: string): Promise<'SUCCESS' | 'FAILURE'> {
         try {
@@ -54,12 +56,6 @@ function useAuth(): IAuthContext {
         localStorage.removeItem('user');
         setUser(null);
     }
-
-    useEffect(() => {
-        const storedUserString = localStorage.getItem('user');
-        const storedUser: IAuthUser | null = storedUserString ? JSON.parse(storedUserString) : null;  
-        setUser(storedUser);
-    }, []);
 
     const context: IAuthContext = {
         user: user,
