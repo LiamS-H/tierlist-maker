@@ -3,12 +3,14 @@ import AXIOS from 'axios'
 import { ITierlist, IAccess } from '../models/tierlist';
 import { useUser } from './auth';
 import { useSnackbar } from './snackbar';
+import { useNavigate } from 'react-router';
 
 function useTierlist(_id:string | undefined) {
     const user = useUser()
     const [tierlist, setTierlist] = useState<ITierlist | undefined>(undefined);
     const [access, setAccess] = useState<IAccess>("LOADING");
     const {raiseError, raiseSuccess} = useSnackbar()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (_id == undefined) { return }
@@ -136,7 +138,45 @@ function useTierlist(_id:string | undefined) {
         return "ERROR"
     }
 
-    return { tierlist, updateTierlist, shareTierlist, deleteTierlist, access };
+    async function copyTierlist(): Promise<"SUCCESS" | "ERROR" | undefined>  {
+        if (user == null ) {
+            console.error("Must be signed in to copy tierlist")
+            return"ERROR";
+        }
+        if (access == "DENIED") {
+            console.error("You should not have access to this tierlist")
+            return "ERROR";
+        }
+        if (tierlist == undefined) {
+            console.error("Could not find tierlist to copy")
+            return "ERROR"
+        }
+        const copyTierlist = {
+            ...tierlist,
+            name: `${tierlist.name} (copy)`
+        }
+        await AXIOS.post(`${import.meta.env.VITE_SERVER_ENDPOINT}/api/tierlist`,{
+            tierlist: copyTierlist
+        }, {
+            params: {
+                token: user.user_uuid,
+            },
+        })
+        .then((response) => {
+            const tierlist: ITierlist = response.data
+            if (tierlist == undefined) return "ERROR"
+            raiseSuccess("tierlist copied successfuly.")
+            navigate(`/tierlist/${tierlist._id}`)
+            return "SUCCESS"
+        })
+        .catch((e: Error)=>{
+            raiseError("something went wrong.")
+            console.error(e)
+            return "ERROR"
+        })
+    }
+
+    return { tierlist, updateTierlist, shareTierlist, deleteTierlist, copyTierlist, access };
 }
 
 export { useTierlist }

@@ -6,6 +6,7 @@ import { Typography } from '@mui/material';
 
 import DeleteButton from './DeleteButton';
 import ShareForm from './ShareForm';
+import CopyButton from './CopyButton';
 
 import { DragDropContext, DropResult } from "@hello-pangea/dnd"
 
@@ -13,9 +14,10 @@ import Tier from "./tier"
 import { ITierlist } from "../../models/tierlist"
 
 
+
 export default function Tierlist() {
     const { id } = useParams()
-    const { tierlist, access, updateTierlist, deleteTierlist, shareTierlist } = useTierlist(id)
+    const { tierlist, access, updateTierlist, deleteTierlist, shareTierlist, copyTierlist } = useTierlist(id)
     const [ dragging, setDragging ] = useState<boolean>(false)
 
     if (tierlist == undefined && access == "DENIED") {
@@ -118,6 +120,7 @@ export default function Tierlist() {
         </>
         :<></>
         }
+        <CopyButton copyTierlist={copyTierlist}/>
         
 
     </>)

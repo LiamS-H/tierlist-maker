@@ -166,7 +166,7 @@ async function updateTierlist(tierlist: Tierlist) {
 async function createTierlist(tierlist: Tierlist, user_id: string) : Promise<number> {
     const db = await openDB()
     await db.run(`
-        INSERT INTO tierlist ( owner, tierlist_name ) VALUES ( ?, ? )
+        INSERT INTO tierlist ( user_uuid, tierlist_name ) VALUES ( ?, ? )
     `, [user_id, tierlist.name, ])
     const { id } = await db.get<{id:number}>(`select seq as id from sqlite_sequence where name="tierlist"`)
     
