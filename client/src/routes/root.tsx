@@ -10,10 +10,16 @@ import NavBar from "./navbar";
 import { useAuth} from "../hooks/auth";
 import { AuthContext } from "../contexts/auth";
 
+import { useSnackbarContext } from "../hooks/snackbar";
+import { SnackbarContext } from "../contexts/snackbar";
+import SnackbarFromContext from "../components/Snackbar";
+
 export default function Root() {
     const authContext = useAuth()
+    const snackbarContext = useSnackbarContext()
     return (<>
     <AuthContext.Provider value={authContext}>
+    <SnackbarContext.Provider value={snackbarContext}>
         <BrowserRouter>
             <NavBar />
             <Routes>
@@ -23,8 +29,9 @@ export default function Root() {
                 <Route path='*' element={<ErrorBoundary />}/>
                 
             </Routes>
+            <SnackbarFromContext/>
         </BrowserRouter>
-        
+    </SnackbarContext.Provider>
     </AuthContext.Provider>
     </>)
 }

@@ -1,40 +1,33 @@
 import { useState, FormEvent } from 'react';
-import { TextField, Button, Container, Typography, Snackbar } from '@mui/material';
-import { Alert } from '@mui/material';
+import { TextField, Button, Container, Typography } from '@mui/material';
 import { useLogin } from '../../hooks/auth';
 import { useNavigate } from "react-router-dom";
+import { useSnackbar } from '../../hooks/snackbar';
 
 export default function Login() {
     const navigate = useNavigate();
     const login = useLogin()
+    const {raiseError, raiseSuccess} = useSnackbar()
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState<'error'|'success'>('success');
 
     const handleLogin = async () => {
         try {
         const response = await login(email, password)
         if (response === 'SUCCESS') {
-            setSnackbarSeverity('success');
-            setSnackbarMessage('Login successful!');
+            raiseSuccess('Login successful!');
+            navigate(-1)
         } else {
-            setSnackbarSeverity('error');
-            setSnackbarMessage('Login denied. Please check your credentials.');
-            navigate("/")
+            raiseError('Login denied. Please check your credentials.');
         }
-        } catch (error) {
-            setSnackbarSeverity('error');
-            setSnackbarMessage('something went wrong');
-        } finally {
-        setSnackbarOpen(true);
+        } catch (e) {
+            raiseError('something went wrong');
         }
     };
 
     const handleSubmit = (e:FormEvent<HTMLFormElement>) => {
-            e.preventDefault(); // Prevents the default form submission
-            handleLogin();
+        e.preventDefault(); // Prevents the default form submission
+        handleLogin();
     };
 
     return (
@@ -74,15 +67,6 @@ export default function Login() {
         </Button>
         </form>
         </div>
-        <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={6000}
-            onClose={() => setSnackbarOpen(false)}
-        >
-            <Alert severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)}>
-                {snackbarMessage}
-            </Alert>
-        </Snackbar>
         </Container>
   );
 }

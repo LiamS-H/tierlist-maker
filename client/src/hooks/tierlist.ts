@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react'
 import AXIOS from 'axios'
 import { ITierlist, Access } from '../models/tierlist';
 import { useUser } from './auth';
+import { useSnackbar } from './snackbar';
 
 function useTierlist(_id:string | undefined) {
     const user = useUser()
     const [tierlist, setTierlist] = useState<ITierlist | undefined>(undefined);
     const [access, setAccess] = useState<Access>("DENIED");
+    const {raiseError, raiseSuccess} = useSnackbar()
+
 
     useEffect(() => {
         if (_id == undefined) { return }
@@ -23,11 +26,13 @@ function useTierlist(_id:string | undefined) {
 
     async function updateTierlist(tierlist:ITierlist) {
         if (user == null ) {
-            console.error("You should not have access to this tierlist")
+            raiseError("please sign in to continue")
+            console.error("please sign in to continue")
             return;
         }
 
         if (access == "DENIED") {
+            
             console.error("You should not have access to this tierlist")
             return;
         }
@@ -58,8 +63,23 @@ function useTierlist(_id:string | undefined) {
             return "ERROR"
         })
     }
+    async function shareTierlist(username:string) {
+        if (user == null ) {
+            console.error("You should not have access to this tierlist")
+            return;
+        }
+        if (access == "DENIED") {
+            console.error("You should not have access to this tierlist")
+            return;
+        }
+        if (access != "OWNER") {
+            console.error("You do not have permission to share this tierlist")
+            return;
+        }
 
-    return { tierlist, updateTierlist, access };
+    }
+
+    return { tierlist, updateTierlist, shareTierlist, access };
 }
 
 export { useTierlist }
