@@ -98,6 +98,7 @@ async function checkAccess(tierlist_id: string, user_id: string | undefined): Pr
     const { visibility, owner } = row
     if (user_id == undefined && visibility == "Public") return "VIEW"
     if (user_id == undefined && visibility == "Private") return "DENIED"
+    if (owner == user_id) {await db.close(); return "OWNER" }
     
     row = await db.get<{can_edit: string}>(`
         SELECT can_edit FROM user_tierlist_sharing
@@ -106,8 +107,6 @@ async function checkAccess(tierlist_id: string, user_id: string | undefined): Pr
     const can_edit = row?.can_edit
     
     await db.close()
-    
-    if (owner == user_id) { return "OWNER" }
     if (can_edit) { return "EDIT" }
     if (visibility == "Private" && can_edit == undefined) { return "DENIED" }
     return "VIEW"
