@@ -6,7 +6,7 @@ import { Typography, Container } from "@mui/material"
 import { Droppable } from '@hello-pangea/dnd'
 
 
-export default function Tier(props: {tier: ITier, items: IItem[]}) {
+export default function Tier(props: {tier: ITier, items: IItem[], isDragDisabled?:boolean}) {
     return (
     <Container
         
@@ -30,7 +30,9 @@ export default function Tier(props: {tier: ITier, items: IItem[]}) {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                 >
-                    {props.items.map((item, index)=><Item key={item._id} item={item} index={index} />)}
+                    {props.items.map((item, index)=>
+                        <Item key={item._id} item={item} index={index} isDragDisabled={props.isDragDisabled}/>
+                    )}
                     {provided.placeholder}
                 </Container>
             )}

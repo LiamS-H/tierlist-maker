@@ -5,17 +5,18 @@ import { Card, CardContent, CardMedia, Typography } from "@mui/material"
 import { Draggable } from '@hello-pangea/dnd'
 
 
-export default function Item(props: {item: IItem, index: number}) {
+export default function Item(props: {item: IItem, index: number, isDragDisabled?:boolean}) {
     return (
         <Draggable
             draggableId={props.item._id.toString()}
             index={props.index}
+            isDragDisabled={props.isDragDisabled}
         >
             {(provided)=>(
                 <Card
                     sx={{
                         width: 140, height: 140,
-                        cursor: "grab"
+                        cursor: props.isDragDisabled?"auto":"grab"
                     }}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
