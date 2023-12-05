@@ -1,6 +1,6 @@
 INSERT INTO users VALUES 
-    ("0000", "liamsh", "liamsh@gmail.com", CURRENT_TIMESTAMP),
-    ("0001", "elguinp", "elguinp@gmail.com", CURRENT_TIMESTAMP)
+    ("0000", "liamsh", "liamsh@gmail.com", CURRENT_TIMESTAMP, 'admin'),
+    ("0001", "elguinp", "elguinp@gmail.com", CURRENT_TIMESTAMP, 'admin')
 ;
 
 INSERT INTO tierlist VALUES 

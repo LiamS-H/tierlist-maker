@@ -3,23 +3,12 @@ import sqlite3 from "sqlite3"
 import { AsyncDatabase } from "promised-sqlite3"
 import fs from "fs"
 
-const reset = `
-    DROP TABLE IF EXISTS users;
-    DROP TABLE IF EXISTS tierlist;
-    DROP TABLE IF EXISTS user_tierlist_sharing;
-    DROP TABLE IF EXISTS item_tierlist_model;
-    DROP TABLE IF EXISTS item;
-    DROP TABLE IF EXISTS tierlist_tiers;
-    DROP TABLE IF EXISTS collections;
-    DROP TABLE IF EXISTS tierlist_settings;
-    DROP TABLE IF EXISTS visibilities;
-    DROP TABLE IF EXISTS tierlistFTS;
-`
+const reset = fs.readFileSync('./config/queries/dropAll.sql').toString()
 
-const schema = fs.readFileSync('./queries/schema.sql').toString()
+const schema = fs.readFileSync('./config/queries/schema.sql').toString()
 
 
-const load = fs.readFileSync('./queries/loadTestData.sql').toString()
+const load = fs.readFileSync('./config/queries/loadTestData.sql').toString()
 
 export async function resetDB () {
     const blankdb = await open({
