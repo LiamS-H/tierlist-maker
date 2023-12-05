@@ -5,7 +5,7 @@ import { resetDB } from './config/db';
 
 import tierlistRoute from './routes/tierlist';
 import tierlistsRoute from './routes/tierlists';
-import sharingRoute from './routes/sharing';
+import sharingRoute from './routes/share';
 import authRoute from'./routes/auth';
 
 resetDB()
