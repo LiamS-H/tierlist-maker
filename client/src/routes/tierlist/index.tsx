@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigate, useParams } from "react-router"
 import { useTierlist } from "../../hooks/tierlist"
 import LoadingTierlist from "./loading"
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 
@@ -115,6 +115,5 @@ export default function Tierlist() {
         >
             Delete
         </Button>
-        <Typography>{dragging?"dragging":"notdragging"}</Typography>
     </>)
 }
