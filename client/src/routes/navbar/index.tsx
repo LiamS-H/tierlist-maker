@@ -14,8 +14,16 @@ export default function NavBar() {
             Navbar
             </Typography>
             <Button color="inherit" component={Link} to="/">
-            Home
+                Home
             </Button>
+            <Button color="inherit" onClick={()=>{navigate('/public')}}>
+                Public
+            </Button>
+            {user ? (
+            <Button color="inherit" onClick={()=>{navigate('/shared')}}>
+                Shared
+            </Button>
+            ) : <></>}
             {user ? (
             <Button color="inherit" onClick={()=>{logout();navigate('/')}}>
                 Logout
