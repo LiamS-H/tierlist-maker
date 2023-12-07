@@ -1,5 +1,13 @@
 import {Tierlist, Item, Tier, Access} from '../../../server/models/tierlist'
 
+// _id: number,
+// name: string,
+// owner: string,
+// created_at: string,
+// items: Items,
+// visibility: string,
+// tiers: Tiers,
+
 type ITierlist = Tierlist
 type IItem = Item
 type ITier = Tier
