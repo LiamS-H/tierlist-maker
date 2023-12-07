@@ -141,6 +141,7 @@ function useTierlist(_id:string | undefined) {
     async function copyTierlist(): Promise<"SUCCESS" | "ERROR" | undefined>  {
         if (user == null ) {
             console.error("Must be signed in to copy tierlist")
+            navigate("/login")
             return"ERROR";
         }
         if (access == "DENIED") {
