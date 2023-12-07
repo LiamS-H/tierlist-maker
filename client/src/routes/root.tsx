@@ -6,6 +6,8 @@ import Home from "./home";
 import Tierlist from "./tierlist";
 import Login from "./login";
 import NavBar from "./navbar";
+import Shared from "./shared";
+import Public from "./public";
 
 import { useAuth} from "../hooks/auth";
 import { AuthContext } from "../contexts/auth";
@@ -13,6 +15,7 @@ import { AuthContext } from "../contexts/auth";
 import { useSnackbarContext } from "../hooks/snackbar";
 import { SnackbarContext } from "../contexts/snackbar";
 import SnackbarFromContext from "../components/Snackbar";
+
 
 export default function Root() {
     const authContext = useAuth()
@@ -24,8 +27,10 @@ export default function Root() {
             <NavBar />
             <Routes>
                 <Route path="/" Component={Home} />
+                <Route path="/Public" Component={Public} />
                 <Route path="/tierlist/:id" Component={Tierlist} />
                 <Route path="/login" Component={Login} />
+                <Route path="/shared" Component={Shared} />
                 <Route path='*' element={<ErrorBoundary />}/>
                 
             </Routes>
