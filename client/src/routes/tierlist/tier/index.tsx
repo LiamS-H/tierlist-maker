@@ -7,9 +7,24 @@ import { Droppable } from '@hello-pangea/dnd'
 
 
 export default function Tier(props: {tier: ITier, items: IItem[], isDragDisabled?:boolean}) {
+    const getBackgroundColor = (tierId:number) => {
+        switch (tierId) {
+          case 0:
+            return 'green';
+          case 1:
+            return 'yellow';
+          case 2:
+            return 'red';
+          default:
+            return 'transparent';
+        }
+      };
     return (
     <Container
-        
+        sx={{
+            borderRadius: '8px',
+            backgroundColor: getBackgroundColor(props.tier._id),
+        }}
     >
         <Typography>
             {props.tier.name}
@@ -22,10 +37,9 @@ export default function Tier(props: {tier: ITier, items: IItem[], isDragDisabled
                 <Container
                 sx={{
                     backgroundColor:"", 
-                    adding: '20px',
                     display: "flex",
                     flexDirection: "row",
-                    minHeight: "200px",
+                    minHeight: "150px",
                 }}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
