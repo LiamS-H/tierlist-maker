@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigate, useParams } from "react-router"
 import { useTierlist } from "../../hooks/tierlist"
 import LoadingTierlist from "./loading"
-import { Typography } from '@mui/material';
+import { Box, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
 import DeleteButton from './DeleteButton';
 import ShareForm from './ShareForm';
@@ -12,6 +12,9 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd"
 
 import Tier from "./tier"
 import { ITierlist } from "../../models/tierlist"
+
+import LockIcon from '@mui/icons-material/Lock'
+import PublicIcon from '@mui/icons-material/Public'
 
 
 
@@ -26,6 +29,12 @@ export default function Tierlist() {
 
     if (tierlist == undefined) {
         return (<LoadingTierlist />)
+    }
+
+    function updateName(name:string) {
+        if (name=="") return;
+        if (tierlist==undefined) return;
+        updateTierlist({...tierlist, name: name})
     }
 
     function onDragStart() {
@@ -96,10 +105,24 @@ export default function Tierlist() {
 
         
     }
+    const can_edit = access=="EDIT" || access=="OWNER"
 
     
     return (<>
-        <Typography>{tierlist.name}</Typography>
+        {can_edit?
+        <TextField
+            value={tierlist.name}
+            variant="outlined"
+            onChange={(e)=>{
+                updateName(e.target.value)
+            }}
+        />:<Typography>{tierlist.name}</Typography>
+        }
+        <Box sx={{display:'flex'}}>
+            <Typography>Owner:{tierlist.owner}</Typography>
+            {access == "OWNER" ? <DeleteButton deleteTierlist={deleteTierlist} />:<></>}
+            <CopyButton copyTierlist={copyTierlist}/>
+        </Box>
         <DragDropContext
             onDragEnd={onDragEnd}
             onDragStart={onDragStart}
@@ -113,15 +136,30 @@ export default function Tierlist() {
         </DragDropContext>
 
         {access == "OWNER" ?
-        <>
-            <Typography>Owner Settings</Typography>
-            <ShareForm shareTierlist={shareTierlist} />
-            <DeleteButton deleteTierlist={deleteTierlist} />
-        </>
+        <Box sx={{display:"flex", flexFlow:"column"}}>
+        <Typography>Sharing</Typography>
+        <ShareForm shareTierlist={shareTierlist} />
+        <Typography>Visibility</Typography>
+        <ToggleButtonGroup
+            value={tierlist.visibility}
+            exclusive
+            onChange={() => updateTierlist(
+                {
+                    ...tierlist,
+                    visibility:tierlist.visibility=="Public"?"Private":"Public"
+                }
+            )}
+            aria-label="Can Edit"
+        >
+            <ToggleButton value={"Public"} aria-label="Edit">
+            <PublicIcon />
+            </ToggleButton>
+            <ToggleButton value={"Private"} aria-label="View">
+            <LockIcon />
+            </ToggleButton>
+        </ToggleButtonGroup>        
+        </Box>
         :<></>
         }
-        <CopyButton copyTierlist={copyTierlist}/>
-        
-
     </>)
 }
