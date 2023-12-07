@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextField, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { TextField, Button, ToggleButton, ToggleButtonGroup, Box } from '@mui/material';
 import { Visibility as VisibilityIcon, Edit as EditIcon } from '@mui/icons-material';
 
 
@@ -25,7 +25,7 @@ function ShareForm({ shareTierlist }: ShareFormProps): JSX.Element {
     };
 
     return (
-    <>
+    <Box sx={{display:'flex',flexFlow:'row'}}>
     <TextField
         label="Username"
         variant="outlined"
@@ -53,7 +53,7 @@ function ShareForm({ shareTierlist }: ShareFormProps): JSX.Element {
     >
         Share
     </Button>
-    </>
+    </Box>
     )
 }
 
