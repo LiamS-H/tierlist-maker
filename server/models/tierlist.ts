@@ -69,6 +69,43 @@ async function getPublicTierlists(offset = 0): Promise<Tierlist[]> {
     return tierlists
 }
 
+async function getUserTierlists(user_id: string, offset = 0): Promise<Tierlist[]> {
+    const db = await openDB()
+    const tierlists = await db.all<Tierlist>(`
+        SELECT tierlist.tierlist_id as _id,
+            tierlist.tierlist_name as name,
+            users.username as owner,
+            tierlist.created_at as created_at,
+            visibilities.name as visibility
+        FROM tierlist
+            INNER JOIN users on users.user_uuid = tierlist.user_uuid
+            INNER JOIN tierlist_settings on tierlist.tierlist_id = tierlist_settings.tierlist_id
+            INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
+        WHERE tierlist.user_uuid = ( ? )
+        LIMIT 10 OFFSET (? * 10)
+    `, [user_id, offset])
+    return tierlists
+}
+
+async function getSharedTierlists(user_id: string, offset = 0): Promise<Tierlist[]> {
+    const db = await openDB()
+    const tierlists = await db.all<Tierlist>(`
+        SELECT tierlist.tierlist_id as _id,
+            tierlist.tierlist_name as name,
+            users.username as owner,
+            tierlist.created_at as created_at,
+            visibilities.name as visibility
+        FROM user_tierlist_sharing
+            INNER JOIN tierlist on tierlist.tierlist_id = user_tierlist_sharing.tierlist_id
+            INNER JOIN users on users.user_uuid = tierlist.user_uuid
+            INNER JOIN tierlist_settings on tierlist.tierlist_id = tierlist_settings.tierlist_id
+            INNER JOIN visibilities on tierlist_settings.visibility = visibilities.visibility
+        WHERE user_tierlist_sharing.user_uuid = ( ? )
+        LIMIT 10 OFFSET (? * 10)
+    `, [user_id, offset])
+    return tierlists
+}
+
 async function exists(tierlist_id: string) : Promise<boolean> {
     const db = await openDB()
     const { tierlist_exists }= await db.get<{tierlist_exists: number}>(`
@@ -262,5 +299,5 @@ async function shareTierlist(tierlist_id: string, user_id: string, can_edit: boo
 export {
     Tierlist, Item, Tier, Access,
     exists, checkAccess,
-    getPublicTierlists, searchPublicTierlists, getTierlistByID, 
+    getPublicTierlists, searchPublicTierlists, getTierlistByID, getSharedTierlists, getUserTierlists,
     updateTierlist, deleteTierlist, createTierlist, shareTierlist }
