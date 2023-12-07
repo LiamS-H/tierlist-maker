@@ -22,12 +22,14 @@ export default function Item(props: {item: IItem, index: number, isDragDisabled?
                     {...provided.dragHandleProps}
                     ref={provided.innerRef}
                 >
-                    <CardMedia
+                    <CardMedia sx={{
+                        height: 100,
+                    }}
                         image={props.item.item_img}
                         title={props.item.item_name}
                     />
                     <CardContent
-                        sx={{height: 10, }}
+                        sx={{height: 10 }}
                     >
                         <Typography>
                             {props.item.item_name}
