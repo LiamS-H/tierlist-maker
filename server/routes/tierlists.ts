@@ -1,5 +1,5 @@
 import express from "express";
-import { Tierlist, getPublicTierlists, searchPublicTierlists } from "../models/tierlist";
+import { Tierlist, getPublicTierlists, searchPublicTierlists, getSharedTierlists, getUserTierlists } from "../models/tierlist";
 
 const router = express.Router();
 
@@ -33,7 +33,21 @@ router.get('/shared', async (req, res) => {
         return res.status(400).json({ message: 'Invalid Token Type' })
     }
 
-    res.status(200).json()
+    const tierlists = await getSharedTierlists(token)
+
+    res.status(200).json(tierlists)
+})
+
+router.get('/user', async (req, res) => {
+    const { token } = req.query
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ message: 'Invalid Token Type' })
+    }
+
+    const tierlists = await getUserTierlists(token)
+
+    res.status(200).json(tierlists)
 })
 
 export default router

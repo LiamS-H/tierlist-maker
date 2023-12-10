@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const { token } = req.query
     const { tierlist } = req.body
-    // tierlist._id = ""
+
     if (typeof token !== "string") {
         return res.status(400).json({ message: 'Invalid Token Type' })
     }
@@ -21,17 +21,18 @@ router.post('/', async (req, res) => {
 router.get('/:uid', async (req, res) => {
     const id = req.params.uid
     const { token } = req.query
-    if (typeof token !== "string") {
+    if (token && typeof token !== "string" ) {
         return res.status(400).json({ message: 'Invalid Token Type' })
     }
-    if (await checkAccess(id, token) == "DENIED") {
+    const access = await checkAccess(id, token)
+    if (access == "DENIED") {
         return res.status(400).json({ message: 'Access Denied' })
     }
     const tierlist = await getTierlistByID(id)
     if (tierlist == null) {
         return res.status(500).json({ message: 'Tierlist Not Found' })
     }
-    res.status(200).json(tierlist)
+    res.status(200).json({tierlist:tierlist, access: access})
 })
 
 router.put('/:uid', async (req, res) => {
@@ -41,14 +42,15 @@ router.put('/:uid', async (req, res) => {
     if (typeof token !== "string") {
         return res.status(400).json({ message: 'Invalid Token Type' })
     }
-    if (await checkAccess(id, token) == "DENIED") {
+    const access = await checkAccess(id, token)
+    if (access == "DENIED") {
         return res.status(400).json({ message: 'Access Denied' })
     }
-    if (await checkAccess(id, token) == "VIEW") {
+    if (access == "VIEW") {
         return res.status(400).json({ message: 'CANNOT EDIT Access Denied' })
     }
     await updateTierlist(tierlist)
-    res.status(202).json(tierlist)
+    res.status(201).json(tierlist)
 })
 
 router.delete('/:uid', async (req, res) => {
@@ -57,10 +59,11 @@ router.delete('/:uid', async (req, res) => {
     if (typeof token !== "string") {
         return res.status(400).json({ message: 'Invalid Token Type' })
     }
-    if (await checkAccess(id, token) == "DENIED") {
+    const access = await checkAccess(id, token)
+    if (access == "DENIED") {
         return res.status(400).json({ message: 'Access Denied' })
     }
-    if (await checkAccess(id, token) != "OWNER") {
+    if (access != "OWNER") {
         return res.status(400).json({ message: 'CANNOT DELETE Access Denied' })
     }
     await deleteTierlist(id)

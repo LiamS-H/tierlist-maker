@@ -3,9 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { resetDB } from './config/db';
 
-import tierlistRoute from './routes/tierlistRoute';
-import tierlistsRoute from './routes/tierlistsRoute';
-
+import tierlistRoute from './routes/tierlist';
+import tierlistsRoute from './routes/tierlists';
+import sharingRoute from './routes/share';
+import authRoute from'./routes/auth';
 
 resetDB()
 dotenv.config();
@@ -23,8 +24,8 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/api/tierlist', tierlistRoute);
 app.use('/api/tierlists', tierlistsRoute);
-
-
+app.use('/api/share', sharingRoute );
+app.use('/api/auth', authRoute );
 
 app.listen(PORT, () => {
     console.log(`tierlist-maker backend starting on port ${PORT}`)
